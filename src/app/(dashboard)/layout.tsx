@@ -8,19 +8,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const name = "John Doe";
-  const email = "8x2dF@example.com";
-  const avatar = "https://github.com/vercel.png";
-  const fallback = "JD";
-
   return (
     <SidebarProvider>
-      <AppSidebar
-        name={name}
-        email={email}
-        avatar={avatar}
-        fallback={fallback}
-      />
+      <AppSidebar />
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );

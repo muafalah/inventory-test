@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Sidebar,
   SidebarContent,
@@ -9,23 +7,11 @@ import {
 import { NavUser } from "./nav-user";
 import { NavMain } from "./nav-main";
 
-interface AppSidebarProps {
-  name: string;
-  email: string;
-  avatar: string;
-  fallback: string;
-}
-
-export function AppSidebar({ name, email, avatar, fallback }: AppSidebarProps) {
+export async function AppSidebar() {
   return (
     <Sidebar variant="inset">
       <SidebarHeader>
-        <NavUser
-          name={name}
-          email={email}
-          avatar={avatar}
-          fallback={fallback}
-        />
+        <NavUser />
       </SidebarHeader>
       <SidebarContent>
         <NavMain />
