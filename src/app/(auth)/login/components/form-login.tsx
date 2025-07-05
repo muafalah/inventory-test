@@ -3,6 +3,10 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,8 +27,28 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { loginSchema, TLoginSchema } from "@/lib/schemas/auth-schema";
+import { authService } from "@/lib/services/auth-service";
+import { apiClient, TErrorResponse } from "@/lib/api-client";
+import { setCookie } from "@/lib/utils";
 
 const FormLogin = () => {
+  const router = useRouter();
+
+  const { mutate, isPending } = useMutation({
+    mutationKey: authService.keys.login,
+    mutationFn: (values: TLoginSchema) =>
+      apiClient.post(authService.endpoints.login, values),
+    onSuccess: ({ data }) => {
+      setCookie("access_token", data.result.token.accessToken);
+      setCookie("refresh_token", data.result.token.refreshToken);
+      toast.success(data.message);
+      router.push("/inventory");
+    },
+    onError: (err: AxiosError<TErrorResponse>) => {
+      toast.error(err.response?.data?.message);
+    },
+  });
+
   const form = useForm<TLoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -34,7 +58,7 @@ const FormLogin = () => {
   });
 
   const onSubmit = (values: TLoginSchema) => {
-    console.log(values);
+    mutate(values);
   };
 
   return (
@@ -57,6 +81,7 @@ const FormLogin = () => {
                       <Input
                         type="email"
                         placeholder="johndoe@mail.com"
+                        disabled={isPending}
                         {...field}
                       />
                     </FormControl>
@@ -71,14 +96,23 @@ const FormLogin = () => {
                   <FormItem>
                     <FormLabel required>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="******"
+                        disabled={isPending}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full mt-1">
-                Login
+              <Button
+                type="submit"
+                className="w-full mt-1 cursor-pointer"
+                disabled={isPending}
+              >
+                {isPending ? "Loading..." : "Login"}
               </Button>
             </form>
           </Form>
