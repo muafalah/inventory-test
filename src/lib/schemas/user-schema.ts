@@ -32,3 +32,20 @@ export const userSchema = (isEdit?: boolean) =>
     });
 
 export type TUserSchema = z.infer<ReturnType<typeof userSchema>>;
+
+export const changePasswordSchema = z
+  .object({
+    password: z
+      .string({ required_error: "Password is required" })
+      .min(6, { message: "Password must be at least 6 characters long" })
+      .max(100, { message: "Password is too long" }),
+    confirmPassword: z.string({
+      required_error: "Confirm Password is required",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
+export type TChangePasswordSchema = z.infer<typeof changePasswordSchema>;

@@ -8,6 +8,7 @@ export const userService = {
     detailById: ["user", "detail"] as const,
     deleteById: ["user", "delete"] as const,
     createUpdate: ["user", "createUpdate"] as const,
+    changePassword: ["user", "changePassword"] as const,
   },
   endpoints: {
     list: userEndpoint("/"),
@@ -15,5 +16,6 @@ export const userService = {
     deleteById: (id: string) => userEndpoint(`/${id}`),
     createUpdate: (id: string) =>
       id ? userEndpoint(`/${id}/change-info`) : userEndpoint("/"),
+    changePassword: (id: string) => userEndpoint(`/${id}/change-password`),
   },
 };

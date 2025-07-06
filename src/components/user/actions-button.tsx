@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, Pencil, Settings, Trash2 } from "lucide-react";
+import { Eye, Lock, Pencil, Settings, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { userService } from "@/lib/services/user-service";
 import { apiClient, TErrorResponse } from "@/lib/api-client";
+import { ChangePasswordDialog } from "./change-password-dialog";
 
 export const ActionsButton = ({
   id,
@@ -28,6 +29,8 @@ export const ActionsButton = ({
   const queryClient = useQueryClient();
 
   const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [showChangePasswordDialog, setShowChangePasswordDialog] =
+    useState<boolean>(false);
 
   const { mutate: mutateDelete, isPending: isDeleting } = useMutation({
     mutationKey: [userService.keys.deleteById],
@@ -72,6 +75,13 @@ export const ActionsButton = ({
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
+                onClick={() => setShowChangePasswordDialog(true)}
+              >
+                <Lock className="size-4 mr-1" />
+                <span>Change Password</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
                 onClick={() => setShowDialog(true)}
               >
                 <Trash2 className="text-red-500 size-4 mr-1" />
@@ -91,6 +101,13 @@ export const ActionsButton = ({
           confirmBtnLabel="Delete"
           confirmBtnClassName={buttonVariants({ variant: "destructive" })}
           onConfirm={() => mutateDelete()}
+        />
+      )}
+      {showChangePasswordDialog && (
+        <ChangePasswordDialog
+          id={id}
+          isOpen={showChangePasswordDialog}
+          setOpen={setShowChangePasswordDialog}
         />
       )}
     </>
