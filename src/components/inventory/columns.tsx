@@ -49,16 +49,17 @@ export const columns: ColumnDef<TInventoryList>[] = [
     accessorKey: "image",
     header: "Image",
     cell: ({ row }) => {
-      const imageUrl = row.getValue("image") as string;
+      const image = row.getValue("image") as string;
+      const imageUrl = `${config.IMAGE_BASE_URL}/${image}`;
 
-      if (!imageUrl) return "-";
+      if (!image) return "-";
 
       return (
         <Link href={imageUrl} target="_blank" rel="noopener noreferrer">
           <div className="relative h-12 w-12">
             <Image
-              src={`${config.IMAGE_BASE_URL}/${imageUrl}`}
-              alt="Item image"
+              src={imageUrl}
+              alt="Image"
               fill
               className="rounded-md object-cover"
             />
