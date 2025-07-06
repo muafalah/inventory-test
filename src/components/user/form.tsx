@@ -28,18 +28,14 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 
-import {
-  inventorySchema,
-  TInventorySchema,
-} from "@/lib/schemas/inventory-schema";
-import { inventoryService } from "@/lib/services/inventory-service";
+import { TUserSchema, userSchema } from "@/lib/schemas/user-schema";
+import { userService } from "@/lib/services/user-service";
 import { apiClient, TErrorResponse } from "@/lib/api-client";
 
-export const FormInventory = ({
+export const FormUser = ({
   id,
   disabled,
 }: {
@@ -51,30 +47,28 @@ export const FormInventory = ({
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const form = useForm<TInventorySchema>({
-    resolver: zodResolver(inventorySchema),
+  const isEdit = !!id;
+
+  const form = useForm<TUserSchema>({
+    resolver: zodResolver(userSchema(isEdit)),
     defaultValues: {
-      code: "",
       name: "",
-      description: "",
-      stockQuantity: 0,
+      email: "",
+      password: "",
     },
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: [...inventoryService.keys.detailById, id],
-    queryFn: () =>
-      apiClient.get(inventoryService.endpoints.detailById(id || "")),
+    queryKey: [...userService.keys.detailById, id],
+    queryFn: () => apiClient.get(userService.endpoints.detailById(id || "")),
     enabled: !!id,
   });
 
   useEffect(() => {
     if (data) {
       form.reset({
-        code: data?.data?.result?.code,
         name: data?.data?.result?.name,
-        description: data?.data?.result?.description,
-        stockQuantity: data?.data?.result?.stockQuantity,
+        email: data?.data?.result?.email,
         image: undefined,
       });
       if (data?.data?.result?.image) {
@@ -84,13 +78,14 @@ export const FormInventory = ({
   }, [data, form]);
 
   const { mutate, isPending } = useMutation({
-    mutationKey: [...inventoryService.keys.createUpdate, id],
-    mutationFn: async (values: TInventorySchema) => {
+    mutationKey: [...userService.keys.createUpdate, id],
+    mutationFn: async (values: TUserSchema) => {
       const formData = new FormData();
-      formData.append("code", values.code);
       formData.append("name", values.name);
-      formData.append("description", values.description);
-      formData.append("stockQuantity", values.stockQuantity.toString());
+      formData.append("email", values.email);
+      if (!isEdit || (values.password && values.password.length > 0)) {
+        formData.append("password", values.password as string);
+      }
       if (values.image instanceof File) {
         formData.append("image", values.image);
       } else {
@@ -98,7 +93,7 @@ export const FormInventory = ({
       }
 
       return apiClient.post(
-        inventoryService.endpoints.createUpdate(id || ""),
+        userService.endpoints.createUpdate(id || ""),
         formData,
         {
           headers: {
@@ -109,15 +104,15 @@ export const FormInventory = ({
     },
     onSuccess: ({ data }) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: inventoryService.keys.list });
-      router.push("/inventory");
+      queryClient.invalidateQueries({ queryKey: userService.keys.list });
+      router.push("/user");
     },
     onError: (err: AxiosError<TErrorResponse>) => {
       toast.error(err.response?.data?.message);
     },
   });
 
-  const onSubmit = (values: TInventorySchema) => {
+  const onSubmit = (values: TUserSchema) => {
     mutate(values);
   };
 
@@ -125,15 +120,16 @@ export const FormInventory = ({
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
-          {!id ? "Crate " : disabled ? "Detail " : "Edit "}
-          Inventory
+          {!id ? "Create " : disabled ? "Detail " : "Edit "}
+          User
         </CardTitle>
         <CardDescription>
           {!id
-            ? "Create a new inventory"
+            ? "Create a new "
             : disabled
-            ? "Detail existing inventory"
-            : "Edit existing inventory"}
+            ? "Detail existing "
+            : "Edit existing "}
+          user
         </CardDescription>
       </CardHeader>
       <Separator />
@@ -143,26 +139,6 @@ export const FormInventory = ({
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* code */}
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>Code</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="e.g. INV-001"
-                        disabled={isPending || disabled}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* name */}
               <FormField
                 control={form.control}
@@ -173,7 +149,7 @@ export const FormInventory = ({
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder="e.g. Inventory 1"
+                        placeholder="John Doe"
                         disabled={isPending || disabled}
                         {...field}
                       />
@@ -183,49 +159,47 @@ export const FormInventory = ({
                 )}
               />
 
-              {/* description */}
+              {/* email */}
               <FormField
                 control={form.control}
-                name="description"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="h-12"
-                        placeholder="Enter your inventory description here"
-                        disabled={isPending || disabled}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* stockQuantity */}
-              <FormField
-                control={form.control}
-                name="stockQuantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>Stock</FormLabel>
+                    <FormLabel required>Email</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        placeholder="e.g. 10"
-                        value={field.value}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          field.onChange(val === "" ? "" : Number(val));
-                        }}
+                        type="email"
+                        placeholder="johndoe@mail.com"
                         disabled={isPending || disabled}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* password */}
+              {!isEdit && (
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel required>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          disabled={isPending || disabled}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* image */}
               {!disabled && (
@@ -296,7 +270,7 @@ export const FormInventory = ({
                     className="w-[110px] mt-1 cursor-pointer"
                     onClick={() => {
                       form.reset();
-                      router.push("/inventory");
+                      router.push("/user");
                     }}
                     disabled={isPending}
                   >

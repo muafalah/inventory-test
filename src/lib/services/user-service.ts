@@ -13,6 +13,7 @@ export const userService = {
     list: userEndpoint("/"),
     detailById: (id: string) => userEndpoint(`/${id}`),
     deleteById: (id: string) => userEndpoint(`/${id}`),
-    createUpdate: (id: string) => userEndpoint(`/${id}`),
+    createUpdate: (id: string) =>
+      id ? userEndpoint(`/${id}/change-info`) : userEndpoint("/"),
   },
 };

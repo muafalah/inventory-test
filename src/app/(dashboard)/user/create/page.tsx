@@ -1,10 +1,10 @@
 import React from "react";
 
 import { PageWrapper } from "@/components/sidebar/page-wrapper";
-import { TableUser } from "@/components/user/table";
+import { FormUser } from "@/components/user/form";
 
 export const metadata = {
-  title: "List User | Inventory-Test",
+  title: "Create User | Inventory-Test",
 };
 
 const breadcrumb = [
@@ -14,13 +14,17 @@ const breadcrumb = [
   },
   {
     label: "Users",
+    href: "/user",
+  },
+  {
+    label: "Create User",
   },
 ];
 
-export default function ListPage() {
+export default function CreatePage() {
   return (
     <PageWrapper breadcrumb={breadcrumb}>
-      <TableUser />
+      <FormUser />
     </PageWrapper>
   );
 }
