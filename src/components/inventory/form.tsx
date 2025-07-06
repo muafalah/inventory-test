@@ -38,6 +38,7 @@ import {
 } from "@/lib/schemas/inventory-schema";
 import { inventoryService } from "@/lib/services/inventory-service";
 import { apiClient, TErrorResponse } from "@/lib/api-client";
+import { config } from "@/lib/config";
 
 export const FormInventory = ({
   id,
@@ -78,7 +79,9 @@ export const FormInventory = ({
         image: undefined,
       });
       if (data?.data?.result?.image) {
-        setImagePreview(data?.data?.result?.image);
+        setImagePreview(
+          `${config.IMAGE_BASE_URL}/${data?.data?.result?.image}`
+        );
       }
     }
   }, [data, form]);
@@ -266,6 +269,7 @@ export const FormInventory = ({
                         setImagePreview(null);
                         form.setValue("image", null);
                       }}
+                      disabled={isPending || disabled}
                     >
                       <Trash2 />
                     </Button>

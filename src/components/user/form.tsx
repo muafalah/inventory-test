@@ -33,14 +33,18 @@ import { Spinner } from "@/components/ui/spinner";
 
 import { TUserSchema, userSchema } from "@/lib/schemas/user-schema";
 import { userService } from "@/lib/services/user-service";
+import { authService } from "@/lib/services/auth-service";
 import { apiClient, TErrorResponse } from "@/lib/api-client";
+import { config } from "@/lib/config";
 
 export const FormUser = ({
   id,
-  disabled,
+  disabled = false,
+  isProfile = false,
 }: {
   id?: string;
   disabled?: boolean;
+  isProfile?: boolean;
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -72,7 +76,9 @@ export const FormUser = ({
         image: undefined,
       });
       if (data?.data?.result?.image) {
-        setImagePreview(data?.data?.result?.image);
+        setImagePreview(
+          `${config.IMAGE_BASE_URL}/${data?.data?.result?.image}`
+        );
       }
     }
   }, [data, form]);
@@ -104,6 +110,11 @@ export const FormUser = ({
     },
     onSuccess: ({ data }) => {
       toast.success(data.message);
+      if (isProfile) {
+        queryClient.invalidateQueries({
+          queryKey: authService.keys.checkToken,
+        });
+      }
       queryClient.invalidateQueries({ queryKey: userService.keys.list });
       router.push("/user");
     },
@@ -121,7 +132,7 @@ export const FormUser = ({
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           {!id ? "Create " : disabled ? "Detail " : "Edit "}
-          User
+          {isProfile ? "Profile" : "User"}
         </CardTitle>
         <CardDescription>
           {!id
@@ -129,7 +140,7 @@ export const FormUser = ({
             : disabled
             ? "Detail existing "
             : "Edit existing "}
-          user
+          {isProfile ? "profile" : "user"}
         </CardDescription>
       </CardHeader>
       <Separator />
@@ -240,6 +251,7 @@ export const FormUser = ({
                         setImagePreview(null);
                         form.setValue("image", null);
                       }}
+                      disabled={isPending || disabled}
                     >
                       <Trash2 />
                     </Button>

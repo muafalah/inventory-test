@@ -23,16 +23,19 @@ const breadcrumb = [
 
 export default async function EditPage({
   params,
+  searchParams,
 }: Readonly<{
   children: React.ReactNode;
   params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }>) {
   params = await params;
   const { id } = params;
+  const isProfile = searchParams.profile;
 
   return (
     <PageWrapper breadcrumb={breadcrumb}>
-      <FormUser id={id} />
+      <FormUser id={id} isProfile={!!isProfile} />
     </PageWrapper>
   );
 }

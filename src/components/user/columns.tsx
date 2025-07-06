@@ -48,6 +48,7 @@ export const columns = (
         <Link href={imageUrl} target="_blank" rel="noopener noreferrer">
           <div className="relative h-12 w-12">
             <Image
+              loading="lazy"
               src={imageUrl}
               alt="Image"
               fill
