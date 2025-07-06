@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import Image from "next/image";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Card,
@@ -34,7 +37,7 @@ import {
   TInventorySchema,
 } from "@/lib/schemas/inventory-schema";
 import { inventoryService } from "@/lib/services/inventory-service";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, TErrorResponse } from "@/lib/api-client";
 
 export const FormInventory = ({
   id,
@@ -43,6 +46,9 @@ export const FormInventory = ({
   id?: string;
   disabled?: boolean;
 }) => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<TInventorySchema>({
@@ -77,21 +83,37 @@ export const FormInventory = ({
     }
   }, [data, form]);
 
-  const { mutate, isPending: isCreating } = useMutation({
-    mutationKey: [inventoryService.endpoints.create],
+  const { mutate, isPending } = useMutation({
+    mutationKey: [...inventoryService.keys.createUpdate, id],
     mutationFn: async (values: TInventorySchema) => {
       const formData = new FormData();
       formData.append("code", values.code);
       formData.append("name", values.name);
       formData.append("description", values.description);
       formData.append("stockQuantity", values.stockQuantity.toString());
-      if (values.image) formData.append("image", values.image);
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+      } else {
+        formData.append("image", "");
+      }
 
-      return apiClient.post(inventoryService.endpoints.create, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      return apiClient.post(
+        inventoryService.endpoints.createUpdate(id || ""),
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+    },
+    onSuccess: ({ data }) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: inventoryService.keys.list });
+      router.push("/inventory");
+    },
+    onError: (err: AxiosError<TErrorResponse>) => {
+      toast.error(err.response?.data?.message);
     },
   });
 
@@ -118,12 +140,10 @@ export const FormInventory = ({
         </CardDescription>
       </CardHeader>
       <Separator />
-      {isLoading ? (
-        <CardContent>
+      <CardContent>
+        {isLoading ? (
           <Spinner className="my-6" />
-        </CardContent>
-      ) : (
-        <CardContent>
+        ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* code */}
@@ -137,7 +157,7 @@ export const FormInventory = ({
                       <Input
                         type="text"
                         placeholder="e.g. INV-001"
-                        disabled={isCreating || disabled}
+                        disabled={isPending || disabled}
                         {...field}
                       />
                     </FormControl>
@@ -157,7 +177,7 @@ export const FormInventory = ({
                       <Input
                         type="text"
                         placeholder="e.g. Inventory 1"
-                        disabled={isCreating || disabled}
+                        disabled={isPending || disabled}
                         {...field}
                       />
                     </FormControl>
@@ -177,7 +197,7 @@ export const FormInventory = ({
                       <Textarea
                         className="h-12"
                         placeholder="Enter your inventory description here"
-                        disabled={isCreating || disabled}
+                        disabled={isPending || disabled}
                         {...field}
                       />
                     </FormControl>
@@ -202,7 +222,7 @@ export const FormInventory = ({
                           const val = e.target.value;
                           field.onChange(val === "" ? "" : Number(val));
                         }}
-                        disabled={isCreating || disabled}
+                        disabled={isPending || disabled}
                       />
                     </FormControl>
                     <FormMessage />
@@ -233,7 +253,7 @@ export const FormInventory = ({
                                 setImagePreview(previewUrl);
                               }
                             }}
-                            disabled={isCreating || disabled}
+                            disabled={isPending || disabled}
                           />
                         </FormControl>
                         <FormMessage />
@@ -247,7 +267,7 @@ export const FormInventory = ({
                       variant="destructive"
                       onClick={() => {
                         setImagePreview(null);
-                        form.setValue("image", undefined);
+                        form.setValue("image", null);
                       }}
                     >
                       <Trash2 />
@@ -277,24 +297,27 @@ export const FormInventory = ({
                     type="button"
                     variant="outline"
                     className="w-[110px] mt-1 cursor-pointer"
-                    onClick={() => form.reset()}
-                    disabled={isCreating}
+                    onClick={() => {
+                      form.reset();
+                      router.push("/inventory");
+                    }}
+                    disabled={isPending}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="w-[110px] mt-1 cursor-pointer"
-                    disabled={isCreating}
+                    disabled={isPending}
                   >
-                    {isCreating ? "Loading..." : "Save"}
+                    Save
                   </Button>
                 </div>
               )}
             </form>
           </Form>
-        </CardContent>
-      )}
+        )}
+      </CardContent>
     </Card>
   );
 };
