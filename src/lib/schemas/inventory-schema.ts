@@ -15,14 +15,6 @@ export const inventorySchema = z.object({
       message: "Stock must be a number",
     })
     .min(0, { message: "Stock cannot be minus" }),
-  // image: z
-  //   .union([
-  //     z.string().url({ message: "Image must be a valid URL" }),
-  //     z.instanceof(File).refine((file) => file.size < 2000000, {
-  //       message: "Your image must be less than 2MB.",
-  //     }),
-  //   ])
-  //   .optional(),
   image: z
     .union([
       z.instanceof(File).refine((file) => file.size < 2000000, {
