@@ -30,12 +30,13 @@ export default async function EditPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }>) {
   params = await params;
+  searchParams = await searchParams;
   const { id } = params;
-  const isProfile = searchParams.profile;
+  const { profile } = searchParams;
 
   return (
     <PageWrapper breadcrumb={breadcrumb}>
-      <FormUser id={id} isProfile={!!isProfile} />
+      <FormUser id={id} isProfile={!!profile} />
     </PageWrapper>
   );
 }
