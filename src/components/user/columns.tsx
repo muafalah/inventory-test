@@ -8,27 +8,22 @@ import { config } from "@/lib/config";
 
 import { ActionsButton } from "./actions-button";
 
-export type TInventoryList = {
+export type TUserList = {
   id: string;
-  code: string;
   name: string;
-  description: string;
-  stockQuantity: number;
+  email: string;
+  isImmutable: number;
   image: string;
 };
+
 export const columns = (
   pageIndex: number,
   pageSize: number
-): ColumnDef<TInventoryList>[] => [
+): ColumnDef<TUserList>[] => [
   {
     accessorKey: "id",
     header: "No",
     cell: ({ row }) => (pageIndex - 1) * pageSize + row.index + 1,
-  },
-  {
-    accessorKey: "code",
-    header: "Code",
-    enableSorting: true,
   },
   {
     accessorKey: "name",
@@ -36,20 +31,8 @@ export const columns = (
     enableSorting: true,
   },
   {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => {
-      const description = row.getValue("description") as string;
-      return (
-        <div className="max-w-[400px] truncate text-ellipsis overflow-hidden">
-          {description}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "stockQuantity",
-    header: "Stock",
+    accessorKey: "email",
+    header: "Email",
     enableSorting: true,
   },
   {
@@ -80,8 +63,9 @@ export const columns = (
     header: "Actions",
     cell: ({ row }) => {
       const id = row.original.id as string;
+      const isImmutable = row.original.isImmutable as unknown as boolean;
 
-      return <ActionsButton id={id} />;
+      return <ActionsButton id={id} isImmutable={isImmutable} />;
     },
   },
 ];

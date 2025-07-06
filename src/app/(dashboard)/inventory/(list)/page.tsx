@@ -1,7 +1,6 @@
 import React from "react";
 
 import { PageWrapper } from "@/components/sidebar/page-wrapper";
-
 import { TableInventory } from "@/components/inventory/table";
 
 export const metadata = {

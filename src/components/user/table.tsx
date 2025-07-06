@@ -12,11 +12,11 @@ import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/datatable";
 
 import { apiClient } from "@/lib/api-client";
-import { inventoryService } from "@/lib/services/inventory-service";
+import { userService } from "@/lib/services/user-service";
 
 import { columns } from "./columns";
 
-export const TableInventory = () => {
+export const TableUser = () => {
   const router = useRouter();
 
   const [search, setSearch] = useState<string>("");
@@ -46,10 +46,10 @@ export const TableInventory = () => {
     search,
   };
 
-  const { data: inventories, isFetching } = useQuery({
-    queryKey: [...inventoryService.keys.list, params],
+  const { data: users, isFetching } = useQuery({
+    queryKey: [...userService.keys.list, params],
     queryFn: () =>
-      apiClient.get(inventoryService.endpoints.list, {
+      apiClient.get(userService.endpoints.list, {
         params,
       }),
   });
@@ -67,18 +67,18 @@ export const TableInventory = () => {
         </div>
         <Button
           className="cursor-pointer"
-          onClick={() => router.push("/inventory/create")}
+          onClick={() => router.push("/user/create")}
         >
-          <PlusCircle /> Add Inventory
+          <PlusCircle /> Add User
         </Button>
       </div>
 
       <div>
         <DataTable
           isLoading={isFetching}
-          data={inventories?.data?.result || []}
+          data={users?.data?.result || []}
           columns={columns(pagination.pageIndex, pagination.pageSize)}
-          totalData={inventories?.data?.meta?.totalItems || 0}
+          totalData={users?.data?.meta?.totalItems || 0}
           pagination={pagination}
           setPagination={setPagination}
           sorting={sorting}
