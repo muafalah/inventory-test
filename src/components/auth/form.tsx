@@ -31,7 +31,7 @@ import { authService } from "@/lib/services/auth-service";
 import { apiClient, TErrorResponse } from "@/lib/api-client";
 import { setCookie } from "@/lib/utils";
 
-const FormLogin = () => {
+export const FormLogin = () => {
   const router = useRouter();
 
   const { mutate, isPending } = useMutation({
@@ -125,5 +125,3 @@ const FormLogin = () => {
     </div>
   );
 };
-
-export default FormLogin;
