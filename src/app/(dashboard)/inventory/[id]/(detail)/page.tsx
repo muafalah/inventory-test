@@ -24,12 +24,10 @@ const breadcrumb = [
 
 export default async function DetailPage({
   params,
-}: Readonly<{
-  children: React.ReactNode;
-  params: { id: string };
-}>) {
-  params = await params;
-  const { id } = params;
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
   return (
     <PageWrapper breadcrumb={breadcrumb}>

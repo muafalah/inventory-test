@@ -24,15 +24,12 @@ const breadcrumb = [
 export default async function EditPage({
   params,
   searchParams,
-}: Readonly<{
-  children: React.ReactNode;
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}>) {
-  params = await params;
-  searchParams = await searchParams;
-  const { id } = params;
-  const { profile } = searchParams;
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ profile: string }>;
+}) {
+  const { id } = await params;
+  const { profile } = await searchParams;
 
   return (
     <PageWrapper breadcrumb={breadcrumb}>
